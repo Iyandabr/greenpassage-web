@@ -2,162 +2,237 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowRight, Sparkles, GraduationCap, Ticket, Briefcase, Shield, Zap } from "lucide-react";
+import { ArrowRight, Sparkles, GraduationCap, Ticket, Briefcase, Shield, Zap, Search, MapPin } from "lucide-react";
 import { type CountryMeta, DESTINATION_COLORS, ALL_COUNTRIES } from "@/lib/all-countries";
 
 const WorldMap = dynamic(() => import("@/components/WorldMap"), { ssr: false });
 
 const STATS = [
-  { val: "180+", label: "Countries" },
+  { val: "180+", label: "Countries mapped" },
   { val: "50K+", label: "Scholarships" },
-  { val: "2M+",  label: "Users Helped" },
-  { val: "94%",  label: "Success Rate" },
+  { val: "2M+",  label: "People helped" },
+  { val: "94%",  label: "Success rate" },
 ];
 
 const PILLARS = [
-  { icon: GraduationCap, label: "Scholarships",   href: "/scholarships",  desc: "50,000+ fully funded awards, AI-matched to you" },
-  { icon: Ticket,        label: "Visa Lottery",   href: "/lottery",       desc: "DV Lottery, Canada draws, real-time alerts" },
-  { icon: Briefcase,     label: "Work Abroad",    href: "/countries",     desc: "Visa-sponsored jobs in 50+ countries" },
-  { icon: Sparkles,      label: "AI Coach",       href: "/ai-coach",      desc: "Your personal migration assistant, 24/7" },
+  { icon: GraduationCap, label: "Scholarships",  href: "/scholarships", desc: "50,000+ fully funded awards, AI-matched to your profile" },
+  { icon: Ticket,        label: "Visa Lottery",  href: "/lottery",      desc: "DV Lottery, Canada draws & real-time alerts" },
+  { icon: Briefcase,     label: "Work Abroad",   href: "/jobs",         desc: "Visa-sponsored jobs across 50+ countries" },
+  { icon: Sparkles,      label: "AI Coach",      href: "/ai-coach",     desc: "Your personal migration assistant, available 24/7" },
+];
+
+const STEPS = [
+  { n: "01", title: "Build your profile",    body: "Tell us your education, work, language skills, and destination. Under 5 minutes." },
+  { n: "02", title: "Get AI-matched",        body: "Our AI scans 180+ countries and thousands of programmes ranked by your real eligibility score." },
+  { n: "03", title: "Follow your roadmap",   body: "Step-by-step actions: documents, deadlines, official links, and a 24/7 AI coach." },
 ];
 
 const TESTIMONIALS = [
-  { name: "Amara O.", from: "Ghana", to: "Germany", text: "DAAD matched in minutes. I'm doing my Masters in Berlin — fully funded.", flag: "🇬🇭→🇩🇪" },
-  { name: "Raj P.",   from: "India", to: "Canada",  text: "Got my PR in 8 months using the Express Entry calculator here.", flag: "🇮🇳→🇨🇦" },
-  { name: "Maria S.", from: "Brazil", to: "UK",     text: "The AI Coach walked me through every step of my UK Skilled Worker Visa.", flag: "🇧🇷→🇬🇧" },
+  { name: "Amara O.", from: "Ghana",  to: "Germany", text: "DAAD matched in minutes. I'm doing my Masters in Berlin — fully funded.", flag: "🇬🇭→🇩🇪" },
+  { name: "Raj P.",   from: "India",  to: "Canada",  text: "Got my PR in 8 months using the Express Entry calculator here.",         flag: "🇮🇳→🇨🇦" },
+  { name: "Maria S.", from: "Brazil", to: "UK",      text: "The AI Coach walked me through every step of my UK Skilled Worker Visa.", flag: "🇧🇷→🇬🇧" },
 ];
+
+const TRUST = [
+  { icon: Shield,   title: "Official sources only",   body: "Every requirement links to a verified government or institution source." },
+  { icon: Zap,      title: "Real-time updates",       body: "Immigration law changes daily. Our AI monitors and alerts you the moment anything affects you." },
+  { icon: Sparkles, title: "AI-powered matching",     body: "Trained on thousands of successful migration journeys. Not generic advice — yours." },
+];
+
+const TOP_DESTINATIONS = Object.entries(DESTINATION_COLORS).slice(0, 16);
 
 export default function HomePage() {
   const [hoveredCountry, setHoveredCountry] = useState<CountryMeta | null>(null);
+  const [search, setSearch] = useState("");
+
+  const searchResults = search.length > 1
+    ? Object.values(ALL_COUNTRIES)
+        .filter(c => c.name.toLowerCase().includes(search.toLowerCase()))
+        .slice(0, 5)
+    : [];
 
   return (
-    <div style={{ background: "#07111D" }}>
+    <div style={{ background: "var(--bg)" }}>
 
-      {/* ══ HERO — full-viewport with live map ══════════════════ */}
-      <section className="relative min-h-screen flex flex-col overflow-hidden">
+      {/* ── HERO ──────────────────────────────────────────────── */}
+      <section className="relative min-h-screen overflow-hidden">
 
-        {/* Background grid */}
-        <div className="absolute inset-0 pointer-events-none"
+        {/* Subtle dot grid — desktop only */}
+        <div className="absolute inset-0 pointer-events-none hidden lg:block"
           style={{
-            backgroundImage: "linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px)",
-            backgroundSize: "60px 60px",
+            backgroundImage: "radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px)",
+            backgroundSize: "28px 28px",
           }} />
 
-        {/* Glow blob top-right */}
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] pointer-events-none"
-          style={{ background: "radial-gradient(circle, rgba(0,212,255,0.08) 0%, transparent 70%)" }} />
+        {/* Ambient glow */}
+        <div className="absolute top-0 right-0 w-[800px] h-[600px] pointer-events-none"
+          style={{ background: "radial-gradient(ellipse at top right, rgba(0,212,255,0.06) 0%, transparent 65%)" }} />
 
-        {/* Copy — top left */}
-        <div className="relative z-10 px-6 md:px-12 pt-28 pb-6 max-w-2xl fade-up">
-          <div className="inline-flex items-center gap-2 mb-6 px-3 py-1.5 rounded-full text-xs font-semibold"
-            style={{ background: "rgba(0,212,255,0.1)", border: "1px solid rgba(0,212,255,0.2)", color: "#00D4FF" }}>
-            <span className="w-1.5 h-1.5 rounded-full bg-[#00D4FF] animate-pulse" />
-            AI-Powered · 180+ Countries · Free to Start
+        {/* ── Desktop layout ── */}
+        <div className="hidden lg:flex relative z-10 items-center min-h-screen max-w-7xl mx-auto px-6">
+          {/* Left — copy */}
+          <div className="w-[520px] shrink-0 pt-20">
+            <span className="chip mb-6 inline-flex">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#00D4FF] pulse" />
+              AI-Powered · 180+ Countries · Free to Start
+            </span>
+
+            <h1 className="display text-white mb-5 fade-up">
+              Your greener<br />
+              <span style={{ color: "#00D4FF" }}>pasture</span><br />
+              awaits.
+            </h1>
+
+            <p className="text-base mb-8 fade-up-delay-1" style={{ color: "var(--text-2)", maxWidth: "400px", lineHeight: 1.7 }}>
+              Scholarships, work visas, visa lotteries — matched to you by AI.
+              Click any country on the map to start.
+            </p>
+
+            <div className="flex items-center gap-3 fade-up-delay-2">
+              <Link href="/checker"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all"
+                style={{ background: "#00D4FF", color: "#060E18" }}>
+                <Sparkles className="w-4 h-4" /> Check eligibility
+              </Link>
+              <Link href="/ai-coach"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all"
+                style={{ border: "1px solid rgba(255,255,255,0.12)", color: "var(--text-2)" }}>
+                Talk to AI Coach <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+
+            {/* Stats */}
+            <div className="flex gap-8 mt-10 fade-up-delay-3">
+              {STATS.map(s => (
+                <div key={s.label}>
+                  <div className="text-xl font-bold" style={{ color: "#00D4FF" }}>{s.val}</div>
+                  <div className="text-xs mt-0.5" style={{ color: "var(--text-3)" }}>{s.label}</div>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <h1 className="display text-white mb-5 fade-up fade-up-delay-1">
-            Your<br />
-            <span style={{ color: "#00D4FF" }} className="text-glow">Greener</span><br />
-            Pasture<br />
-            <span style={{ color: "#F5C542" }}>Awaits.</span>
+          {/* Right — map fills remaining space */}
+          <div className="flex-1 relative" style={{ height: "100vh" }}>
+            <WorldMap onHover={setHoveredCountry} />
+
+            {/* Country hover card */}
+            {hoveredCountry && (
+              <div className="absolute bottom-16 right-4 card px-4 py-3 min-w-48 pointer-events-none fade-up"
+                style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.4)" }}>
+                <div className="flex items-center gap-2.5 mb-1">
+                  <span className="text-2xl">{hoveredCountry.flag}</span>
+                  <div>
+                    <p className="font-semibold text-white text-sm">{hoveredCountry.name}</p>
+                    <p className="text-xs" style={{ color: "#00D4FF" }}>{hoveredCountry.subregion}</p>
+                  </div>
+                </div>
+                <p className="text-xs mt-1.5" style={{ color: "var(--text-3)" }}>
+                  Click to view migration guide →
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ── Mobile layout (no map) ── */}
+        <div className="lg:hidden relative z-10 px-5 pt-24 pb-12">
+          <span className="chip mb-5 inline-flex">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#00D4FF] pulse" />
+            AI-Powered Migration Platform
+          </span>
+
+          <h1 className="text-4xl font-bold text-white mb-4 leading-tight" style={{ letterSpacing: "-0.02em" }}>
+            Your greener<br />
+            <span style={{ color: "#00D4FF" }}>pasture awaits.</span>
           </h1>
 
-          <p className="text-lg mb-8 fade-up fade-up-delay-2" style={{ color: "rgba(255,255,255,0.55)", maxWidth: "440px", lineHeight: 1.6 }}>
-            Scholarships, work visas, visa lotteries — all in one AI-powered platform.
-            Click any country on the map to start your journey.
+          <p className="text-sm mb-8" style={{ color: "var(--text-2)", lineHeight: 1.7 }}>
+            Scholarships, work visas & visa lotteries — all matched to you by AI.
           </p>
 
-          <div className="flex flex-wrap gap-3 fade-up fade-up-delay-3">
-            <Link href="/checker"
-              className="flex items-center gap-2 px-6 py-3.5 rounded-xl font-bold text-sm transition-all glow"
-              style={{ background: "#00D4FF", color: "#07111D" }}>
-              <Sparkles className="w-4 h-4" /> Check My Eligibility
-            </Link>
-            <Link href="/ai-coach"
-              className="flex items-center gap-2 px-6 py-3.5 rounded-xl font-semibold text-sm transition-all"
-              style={{ border: "1px solid rgba(0,212,255,0.25)", color: "rgba(255,255,255,0.8)" }}>
-              Talk to AI Coach <ArrowRight className="w-4 h-4" />
-            </Link>
+          {/* Search */}
+          <div className="relative mb-6">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "var(--text-3)" }} />
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search countries, e.g. Canada..."
+              className="w-full rounded-xl pl-10 pr-4 py-3 text-sm outline-none"
+              style={{ background: "var(--surface)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff" }}
+            />
+            {searchResults.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1 card overflow-hidden z-20"
+                style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.5)" }}>
+                {searchResults.map(c => (
+                  <Link key={c.slug} href={`/countries/${c.slug}`}
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm transition-colors"
+                    style={{ borderBottom: "1px solid rgba(255,255,255,0.05)", color: "var(--text-1)" }}
+                    onClick={() => setSearch("")}>
+                    <span>{c.flag}</span>
+                    <span className="font-medium">{c.name}</span>
+                    <span className="ml-auto text-xs" style={{ color: "var(--text-3)" }}>{c.subregion}</span>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
 
+          {/* Quick actions */}
+          <div className="grid grid-cols-2 gap-2.5 mb-8">
+            {PILLARS.map(p => {
+              const Icon = p.icon;
+              return (
+                <Link key={p.href} href={p.href}
+                  className="flex items-center gap-2.5 px-3.5 py-3 rounded-xl text-sm font-medium transition-all"
+                  style={{ background: "var(--surface)", border: "1px solid rgba(255,255,255,0.08)", color: "var(--text-1)" }}>
+                  <Icon className="w-4 h-4 shrink-0" style={{ color: "#00D4FF" }} />
+                  {p.label}
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* CTA */}
+          <Link href="/signup"
+            className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-sm"
+            style={{ background: "#00D4FF", color: "#060E18" }}>
+            Get started free <ArrowRight className="w-4 h-4" />
+          </Link>
+
           {/* Stats row */}
-          <div className="flex flex-wrap gap-6 mt-10 fade-up fade-up-delay-3">
+          <div className="flex gap-6 mt-8 flex-wrap">
             {STATS.map(s => (
               <div key={s.label}>
-                <div className="text-2xl font-black" style={{ color: "#00D4FF" }}>{s.val}</div>
-                <div className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>{s.label}</div>
+                <div className="text-lg font-bold" style={{ color: "#00D4FF" }}>{s.val}</div>
+                <div className="text-xs" style={{ color: "var(--text-3)" }}>{s.label}</div>
               </div>
             ))}
           </div>
         </div>
-
-        {/* Map — right side, full height */}
-        <div className="absolute inset-0 z-0 opacity-90" style={{ top: "64px" }}>
-          <WorldMap onHover={setHoveredCountry} />
-        </div>
-
-        {/* Hover tooltip */}
-        {hoveredCountry && (
-          <div className="absolute bottom-24 right-8 z-20 glass rounded-2xl p-4 min-w-52 pointer-events-none fade-up">
-            <div className="flex items-center gap-3 mb-2">
-              <span className="text-3xl">{hoveredCountry.flag}</span>
-              <div>
-                <p className="font-black text-white text-lg">{hoveredCountry.name}</p>
-                <p className="text-xs" style={{ color: "#00D4FF" }}>{hoveredCountry.subregion}</p>
-              </div>
-            </div>
-            <p className="text-xs font-semibold" style={{ color: "#00D4FF" }}>
-              Click to view migration guide →
-            </p>
-          </div>
-        )}
-
-        {/* Scroll hint */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2 opacity-40">
-          <div className="w-5 h-8 rounded-full border border-white/20 flex items-start justify-center p-1">
-            <div className="w-1 h-2 rounded-full bg-white animate-bounce" />
-          </div>
-          <span className="text-xs text-white/40">Scroll</span>
-        </div>
       </section>
 
-      {/* ══ MAP INSTRUCTION BANNER ══════════════════════════════ */}
-      <section style={{ background: "rgba(0,212,255,0.05)", borderTop: "1px solid rgba(0,212,255,0.1)", borderBottom: "1px solid rgba(0,212,255,0.1)" }}
-        className="px-6 py-5">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: "#00D4FF" }} />
-            <p className="text-sm font-medium" style={{ color: "rgba(255,255,255,0.7)" }}>
-              <span style={{ color: "#00D4FF" }}>Interactive Map:</span>{" "}
-              Click any highlighted country to see visa requirements, job opportunities, scholarships, and official government links.
-            </p>
-          </div>
-          <Link href="/countries"
-            className="text-xs font-bold px-4 py-2 rounded-lg whitespace-nowrap"
-            style={{ background: "rgba(0,212,255,0.1)", border: "1px solid rgba(0,212,255,0.2)", color: "#00D4FF" }}>
-            View All Countries →
-          </Link>
+      {/* ── PILLARS ───────────────────────────────────────────── */}
+      <section className="max-w-7xl mx-auto px-5 py-20">
+        <div className="mb-10">
+          <p className="text-xs font-semibold tracking-widest uppercase mb-2" style={{ color: "#00D4FF" }}>What we offer</p>
+          <h2 className="display-sm text-white">Everything you need<br />to move abroad.</h2>
         </div>
-      </section>
-
-      {/* ══ 4 PILLARS ════════════════════════════════════════════ */}
-      <section className="max-w-7xl mx-auto px-6 py-24">
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {PILLARS.map((p, i) => {
             const Icon = p.icon;
             return (
-              <Link key={i} href={p.href}
-                className="group glass rounded-2xl p-6 hover:border-[#00D4FF]/30 transition-all block">
-                <div className="w-10 h-10 rounded-xl mb-5 flex items-center justify-center"
-                  style={{ background: "rgba(0,212,255,0.1)", border: "1px solid rgba(0,212,255,0.2)" }}>
-                  <Icon className="w-5 h-5" style={{ color: "#00D4FF" }} />
+              <Link key={i} href={p.href} className="card p-5 group transition-all hover:border-[rgba(0,212,255,0.25)] block">
+                <div className="w-9 h-9 rounded-lg mb-4 flex items-center justify-center"
+                  style={{ background: "rgba(0,212,255,0.08)" }}>
+                  <Icon className="w-4 h-4" style={{ color: "#00D4FF" }} />
                 </div>
-                <h3 className="font-black text-lg text-white mb-2 group-hover:text-[#00D4FF] transition-colors">
+                <h3 className="font-semibold text-white mb-1.5 group-hover:text-[#00D4FF] transition-colors text-sm">
                   {p.label}
                 </h3>
-                <p className="text-sm" style={{ color: "rgba(255,255,255,0.45)", lineHeight: 1.6 }}>{p.desc}</p>
-                <div className="mt-4 flex items-center gap-1 text-xs font-semibold" style={{ color: "#00D4FF" }}>
-                  Explore <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                <p className="text-xs leading-relaxed" style={{ color: "var(--text-3)" }}>{p.desc}</p>
+                <div className="mt-4 flex items-center gap-1 text-xs font-medium" style={{ color: "#00D4FF" }}>
+                  Explore <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                 </div>
               </Link>
             );
@@ -165,38 +240,34 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ══ HOW IT WORKS ════════════════════════════════════════ */}
-      <section className="max-w-7xl mx-auto px-6 py-16">
-        <div className="flex flex-col lg:flex-row gap-16 items-center">
-          {/* Left */}
-          <div className="lg:w-1/2">
-            <p className="text-xs font-bold tracking-[0.2em] uppercase mb-4" style={{ color: "#00D4FF" }}>How It Works</p>
-            <h2 className="display-sm text-white mb-6">
-              From profile<br />to passport<br />
-              <span style={{ color: "#F5C542" }}>stamp.</span>
+      {/* ── HOW IT WORKS ─────────────────────────────────────── */}
+      <section style={{ borderTop: "1px solid var(--border)" }} className="max-w-7xl mx-auto px-5 py-20">
+        <div className="flex flex-col lg:flex-row gap-16 items-start">
+          <div className="lg:w-80 shrink-0">
+            <p className="text-xs font-semibold tracking-widest uppercase mb-2" style={{ color: "#00D4FF" }}>How it works</p>
+            <h2 className="display-sm text-white mb-4">
+              From profile<br />to passport.
             </h2>
-            <p style={{ color: "rgba(255,255,255,0.5)", lineHeight: 1.7 }} className="mb-8 max-w-sm">
-              Three steps is all it takes. GreenPassage AI handles the complexity so you can focus on your dream.
+            <p className="text-sm leading-relaxed mb-6" style={{ color: "var(--text-2)" }}>
+              Three steps is all it takes. GreenPassage handles the complexity.
             </p>
             <Link href="/checker"
-              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl font-bold text-sm"
-              style={{ background: "#00D4FF", color: "#07111D" }}>
-              Start Free <ArrowRight className="w-4 h-4" />
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm"
+              style={{ background: "#00D4FF", color: "#060E18" }}>
+              Start free <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
 
-          {/* Right — steps */}
-          <div className="lg:w-1/2 space-y-4">
-            {[
-              { n: "01", title: "Build your profile", body: "Tell us your education, work, language skills, and where you want to go. Takes under 5 minutes." },
-              { n: "02", title: "Get AI-matched",     body: "Our AI scans 180+ countries and thousands of programmes instantly, ranked by your real eligibility score." },
-              { n: "03", title: "Follow your roadmap", body: "Step-by-step action plan: documents, deadlines, official links, and an AI coach available 24/7." },
-            ].map((step, i) => (
-              <div key={i} className="flex gap-5 glass rounded-2xl p-5">
-                <span className="font-black text-4xl shrink-0 leading-none" style={{ color: "rgba(0,212,255,0.2)" }}>{step.n}</span>
+          <div className="flex-1 space-y-3">
+            {STEPS.map((step, i) => (
+              <div key={i} className="flex gap-5 card p-5 transition-all hover:border-[rgba(255,255,255,0.12)]">
+                <span className="font-bold text-3xl shrink-0 leading-none tabular-nums"
+                  style={{ color: "rgba(255,255,255,0.08)", fontVariantNumeric: "tabular-nums" }}>
+                  {step.n}
+                </span>
                 <div>
-                  <h3 className="font-bold text-white mb-1">{step.title}</h3>
-                  <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)", lineHeight: 1.6 }}>{step.body}</p>
+                  <h3 className="font-semibold text-white mb-1 text-sm">{step.title}</h3>
+                  <p className="text-xs leading-relaxed" style={{ color: "var(--text-3)" }}>{step.body}</p>
                 </div>
               </div>
             ))}
@@ -204,24 +275,29 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ══ COUNTRY SPOTLIGHT STRIP ════════════════════════════ */}
-      <section style={{ borderTop: "1px solid rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}
-        className="py-10 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6">
-          <p className="text-xs font-bold tracking-[0.2em] uppercase text-center mb-8" style={{ color: "rgba(255,255,255,0.3)" }}>
-            Top migration destinations — click any for the full guide
-          </p>
-          <div className="flex flex-wrap gap-3 justify-center">
-            {Object.entries(DESTINATION_COLORS).slice(0, 20).map(([id, color]) => {
+      {/* ── DESTINATIONS ─────────────────────────────────────── */}
+      <section style={{ borderTop: "1px solid var(--border)" }} className="py-16">
+        <div className="max-w-7xl mx-auto px-5">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <p className="text-xs font-semibold tracking-widest uppercase mb-1.5" style={{ color: "#00D4FF" }}>Top destinations</p>
+              <h2 className="text-xl font-bold text-white">Where people are going</h2>
+            </div>
+            <Link href="/countries" className="text-xs font-medium flex items-center gap-1 hidden sm:flex"
+              style={{ color: "#00D4FF" }}>
+              View all <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {TOP_DESTINATIONS.map(([id, color]) => {
               const c = ALL_COUNTRIES[id];
               if (!c) return null;
               return (
                 <Link key={c.slug} href={`/countries/${c.slug}`}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm transition-all hover:scale-105"
-                  style={{ background: color + "15", border: `1px solid ${color}30`, color: "rgba(255,255,255,0.8)" }}>
-                  <span className="text-lg">{c.flag}</span>
+                  className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-all hover:opacity-80"
+                  style={{ background: `${color}12`, border: `1px solid ${color}22`, color: "var(--text-1)" }}>
+                  <span>{c.flag}</span>
                   {c.name}
-                  <span className="text-xs font-normal" style={{ color }}>→</span>
                 </Link>
               );
             })}
@@ -229,91 +305,94 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ══ TESTIMONIALS ════════════════════════════════════════ */}
-      <section className="max-w-7xl mx-auto px-6 py-24">
-        <div className="text-center mb-14">
-          <p className="text-xs font-bold tracking-[0.2em] uppercase mb-3" style={{ color: "#00D4FF" }}>Real People · Real Results</p>
-          <h2 className="display-sm text-white">They made it.<br /><span style={{ color: "#F5C542" }}>You can too.</span></h2>
+      {/* ── TESTIMONIALS ─────────────────────────────────────── */}
+      <section style={{ borderTop: "1px solid var(--border)" }} className="max-w-7xl mx-auto px-5 py-20">
+        <div className="mb-10">
+          <p className="text-xs font-semibold tracking-widest uppercase mb-2" style={{ color: "#00D4FF" }}>Real people, real results</p>
+          <h2 className="display-sm text-white">They made it.</h2>
         </div>
-        <div className="grid md:grid-cols-3 gap-5">
+        <div className="grid md:grid-cols-3 gap-4">
           {TESTIMONIALS.map((t, i) => (
-            <div key={i} className="boarding-pass rounded-2xl p-6">
-              <div className="flex items-center justify-between mb-5">
-                <span className="text-3xl">{t.flag}</span>
-                <span className="text-xs font-bold px-2 py-1 rounded-full"
-                  style={{ background: "rgba(0,212,255,0.1)", color: "#00D4FF", border: "1px solid rgba(0,212,255,0.2)" }}>
-                  APPROVED ✓
+            <div key={i} className="card p-6"
+              style={{ background: "var(--surface-2)" }}>
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-2xl">{t.flag}</span>
+                <span className="text-xs font-semibold px-2 py-1 rounded-full"
+                  style={{ background: "rgba(52,168,83,0.12)", color: "#34A853", border: "1px solid rgba(52,168,83,0.2)" }}>
+                  ✓ Approved
                 </span>
               </div>
-              <p className="text-sm mb-5 italic" style={{ color: "rgba(255,255,255,0.75)", lineHeight: 1.7 }}>
+              <p className="text-sm leading-relaxed mb-5 italic" style={{ color: "var(--text-2)" }}>
                 "{t.text}"
               </p>
-              <div style={{ borderTop: "1px dashed rgba(255,255,255,0.1)" }} className="pt-4">
-                <p className="font-bold text-white text-sm">{t.name}</p>
-                <p className="text-xs" style={{ color: "#00D4FF" }}>{t.from} → {t.to}</p>
+              <div style={{ borderTop: "1px solid var(--border)" }} className="pt-4">
+                <p className="text-sm font-semibold text-white">{t.name}</p>
+                <p className="text-xs mt-0.5" style={{ color: "#00D4FF" }}>{t.from} → {t.to}</p>
               </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ══ TRUST ════════════════════════════════════════════════ */}
-      <section className="max-w-7xl mx-auto px-6 py-8">
-        <div className="glass rounded-3xl p-8 grid md:grid-cols-3 gap-8 text-center">
-          {[
-            { icon: Shield, title: "Official Sources Only", body: "Every requirement links to a verified government or institution source. No guesswork." },
-            { icon: Zap,    title: "Real-Time Updates",    body: "Immigration law changes daily. Our AI monitors and alerts you the moment anything affects you." },
-            { icon: Sparkles, title: "AI-Powered Matching", body: "Trained on thousands of successful migration journeys. Not generic advice — your advice." },
-          ].map((item, i) => {
+      {/* ── TRUST ────────────────────────────────────────────── */}
+      <section style={{ borderTop: "1px solid var(--border)" }} className="max-w-7xl mx-auto px-5 py-16">
+        <div className="grid md:grid-cols-3 gap-6">
+          {TRUST.map((item, i) => {
             const Icon = item.icon;
             return (
-              <div key={i} className="flex flex-col items-center gap-3">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-                  style={{ background: "rgba(0,212,255,0.1)", border: "1px solid rgba(0,212,255,0.15)" }}>
-                  <Icon className="w-5 h-5" style={{ color: "#00D4FF" }} />
+              <div key={i} className="flex items-start gap-4">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
+                  style={{ background: "rgba(0,212,255,0.08)" }}>
+                  <Icon className="w-4 h-4" style={{ color: "#00D4FF" }} />
                 </div>
-                <h4 className="font-bold text-white">{item.title}</h4>
-                <p className="text-sm" style={{ color: "rgba(255,255,255,0.45)", lineHeight: 1.6 }}>{item.body}</p>
+                <div>
+                  <h4 className="font-semibold text-white mb-1 text-sm">{item.title}</h4>
+                  <p className="text-xs leading-relaxed" style={{ color: "var(--text-3)" }}>{item.body}</p>
+                </div>
               </div>
             );
           })}
         </div>
       </section>
 
-      {/* ══ FINAL CTA ════════════════════════════════════════════ */}
-      <section className="max-w-7xl mx-auto px-6 py-24">
-        <div className="relative rounded-3xl overflow-hidden p-14 text-center"
-          style={{ background: "linear-gradient(135deg, #0C2340 0%, #07111D 100%)", border: "1px solid rgba(0,212,255,0.15)" }}>
+      {/* ── CTA ──────────────────────────────────────────────── */}
+      <section style={{ borderTop: "1px solid var(--border)" }} className="max-w-7xl mx-auto px-5 py-20">
+        <div className="card-em rounded-2xl p-10 md:p-16 text-center relative overflow-hidden">
           <div className="absolute inset-0 pointer-events-none"
-            style={{ background: "radial-gradient(ellipse at center top, rgba(0,212,255,0.1), transparent 70%)" }} />
+            style={{ background: "radial-gradient(ellipse at center, rgba(0,212,255,0.06) 0%, transparent 70%)" }} />
           <div className="relative">
-            <h2 className="display-sm text-white mb-4">
-              Your greener<br />
-              pasture is <span style={{ color: "#00D4FF" }} className="text-glow">one click away.</span>
+            <MapPin className="w-6 h-6 mx-auto mb-6" style={{ color: "#00D4FF" }} />
+            <h2 className="display-sm text-white mb-3">
+              Your next chapter<br />starts here.
             </h2>
-            <p className="mb-8 mx-auto max-w-md text-lg" style={{ color: "rgba(255,255,255,0.5)" }}>
-              Join 2 million people who used GreenPassage to find their path abroad. Start free today.
+            <p className="text-sm mb-8 mx-auto max-w-sm" style={{ color: "var(--text-2)", lineHeight: 1.7 }}>
+              Join 2 million people who used GreenPassage to find their path abroad. Free to start.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link href="/signup"
-                className="flex items-center gap-2 px-10 py-4 rounded-xl font-black text-base transition-all glow"
-                style={{ background: "#00D4FF", color: "#07111D" }}>
-                Start For Free <ArrowRight className="w-5 h-5" />
+                className="flex items-center gap-2 px-8 py-3 rounded-xl font-semibold text-sm transition-all"
+                style={{ background: "#00D4FF", color: "#060E18" }}>
+                Create free account <ArrowRight className="w-4 h-4" />
               </Link>
-              <p className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>No credit card required</p>
+              <Link href="/checker"
+                className="flex items-center gap-2 px-8 py-3 rounded-xl font-semibold text-sm"
+                style={{ border: "1px solid rgba(255,255,255,0.1)", color: "var(--text-2)" }}>
+                Check my eligibility
+              </Link>
             </div>
+            <p className="text-xs mt-4" style={{ color: "var(--text-3)" }}>No credit card required</p>
           </div>
         </div>
       </section>
 
-      {/* ══ FOOTER ═══════════════════════════════════════════════ */}
-      <footer style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }} className="py-10">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <span className="font-black text-white">Green<span style={{ color: "#00D4FF" }}>Passage</span></span>
-          <p className="text-xs" style={{ color: "rgba(255,255,255,0.25)" }}>
-            © 2026 GreenPassage · AI-Powered Migration Platform
-          </p>
-          <div className="flex gap-6 text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
+      {/* ── FOOTER ───────────────────────────────────────────── */}
+      <footer style={{ borderTop: "1px solid var(--border)" }} className="py-8">
+        <div className="max-w-7xl mx-auto px-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <span className="font-bold text-sm text-white">
+            Green<span style={{ color: "#00D4FF" }}>Passage</span>
+          </span>
+          <p className="text-xs" style={{ color: "var(--text-3)" }}>© 2026 GreenPassage · AI-Powered Migration Platform</p>
+          <div className="flex gap-5 text-xs" style={{ color: "var(--text-3)" }}>
             <Link href="#" className="hover:text-white transition-colors">Privacy</Link>
             <Link href="#" className="hover:text-white transition-colors">Terms</Link>
             <Link href="#" className="hover:text-white transition-colors">Contact</Link>
